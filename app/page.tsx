@@ -1,101 +1,207 @@
-import Image from "next/image";
+'use client'
+import {useEffect} from 'react';
+import {Input} from '@/components/ui/input'
+import {useState} from "react";
+import { Button } from "@/components/ui/button"
+import { Ellipsis } from 'lucide-react';
+import { X } from 'lucide-react';
+interface SectionItem {
+    itemId: number;
+    content: string;
+}
+
+interface SectionData {
+    sectionId: number;
+    sectionTitle: string;
+    items: SectionItem[];
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
+    const [editingItemId, setEditingItemId] = useState<number | null>(null);
+    const [sectionData, setSectionData] = useState<SectionData[]>([]);
+    //const [loading, setLoading] = useState(false);
+    const [newSectionTitle, setNewSectionTitle] = useState<string>('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const addNewSection = (sectionTitle: string) => {
+        const newSectionData: SectionData = {
+            sectionId: Date.now(),
+            sectionTitle,
+            items: [],
+        };
+        setSectionData([...sectionData,newSectionData]);
+    }
+
+    const handleAddNewSection = () => {
+        addNewSection(newSectionTitle);
+        setNewSectionTitle('');
+    };
+
+    const addItemToSection = (sectionId: number, content: string) => {
+        setSectionData((prev) =>
+            prev.map((section) =>
+                section.sectionId === sectionId
+                    ? {
+                        ...section,
+                        items: [...(section.items || []), { itemId: Date.now(), content }],
+                    }
+                    : section
+            )
+        );
+    }
+
+    const editItemContent = (sectionId: number, itemId: number, newContent: string) => {
+        setSectionData((prev) =>
+            prev.map((section) =>
+                section.sectionId === sectionId
+                    ? {
+                        ...section,
+                        items: section.items.map((item) =>
+                            item.itemId === itemId ? { ...item, content: newContent } : item
+                        ),
+                    }
+                    : section
+            )
+        );
+    };
+
+    const deleteItem = (sectionId: number, itemId: number) => {
+        setSectionData((prev) =>
+            prev.map((section) =>
+                section.sectionId === sectionId
+                    ? {
+                        ...section,
+                        items: section.items.filter((item) => item.itemId !== itemId),
+                    }
+                    : section
+            )
+        );
+    };
+
+
+    // Load from localStorage only once on mount
+    useEffect(() => {
+        const savedSectionData = localStorage.getItem('sectionData');
+        if (savedSectionData) {
+            try {
+                setSectionData(JSON.parse(savedSectionData) as SectionData[]);
+            } catch (error) {
+                console.error('Error parsing section data:', error);
+            }
+        }
+    }, []);
+
+    // Save to localStorage whenever sectionData changes
+    useEffect(() => {
+        if (sectionData.length > 0) {
+            localStorage.setItem('sectionData', JSON.stringify(sectionData));
+        }
+    }, [sectionData]);
+
+  return (
+    <div className="items-center justify-items-center min-h-screen p-8 pb-12  sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <Input placeholder="Add a section"
+             value={newSectionTitle}
+             onChange={(e) => setNewSectionTitle(e.target.value)}
+             onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                 handleAddNewSection();
+                }
+      }} />
+        <div className={`grid gap-8 ${
+            sectionData.length <= 2
+                ? 'grid-cols-1'
+                : sectionData.length < 5
+                    ? 'grid-cols-2'
+                    : sectionData.length < 7
+                        ? 'grid-cols-3'
+                        : 'grid-cols-4' // Optional fallback for more sections
+        }`}>
+
+
+
+
+        {sectionData?.map((section) => (
+            <div key={section.sectionId} className="pt-8 min-w-48 group">
+                                <div className="group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                            <h2 className='font-bold underline'>{section.sectionTitle} </h2>
+
+                {/* Render items */}
+                                    {section.items?.map((item) => (
+                                        <div key={item.itemId} className="pt-1 group flex items-center justify-between">
+                                            {editingItemId === item.itemId ? (
+                                                <div className="flex w-full">
+                                                    <input
+                                                        defaultValue={item.content}
+                                                        autoFocus
+                                                        onBlur={() => setEditingItemId(null)} // Stop editing on blur
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
+                                                                editItemContent(section.sectionId, item.itemId, e.currentTarget.value.trim());
+                                                                setEditingItemId(null); // Stop editing
+                                                            } else if (e.key === "Escape") {
+                                                                setEditingItemId(null); // Cancel editing
+                                                            }
+                                                        }}
+                                                        className="flex-1 border px-2 py-1"
+                                                    />
+                                                    <button
+                                                        onClick={() => deleteItem(section.sectionId, item.itemId)}
+                                                        className="ml-2 text-gray-500 hover:text-red-500"
+                                                    >
+                                                        <X />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between w-full">
+                                                    <p
+                                                        onClick={() => {
+                                                            setEditingItemId(item.itemId);
+                                                            setActiveSectionId(null);
+                                                        }}
+                                                        className="cursor-pointer flex-1"
+                                                    >
+                                                        {item.content}
+                                                    </p>
+                                                    <button
+                                                        onClick={() => deleteItem(section.sectionId, item.itemId)}
+                                                        className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {activeSectionId === section.sectionId  &&
+                <Input
+                    placeholder={`Add content...`}
+                    autoFocus
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.target.value) {
+                            addItemToSection(section.sectionId, e.target.value);
+                            e.target.value = '';
+                            setActiveSectionId(null)
+                        }
+                        else if (e.key === 'Escape') {
+                            setActiveSectionId(null); // Close input on Escape
+                        }
+                    }}
+                />
+                }
+                {activeSectionId != section.sectionId  &&
+                <button className="font-light hover:underline hover:font-medium" onClick={() =>
+                    setActiveSectionId((prev) =>
+                        prev === section.sectionId ? null : section.sectionId
+
+                    )
+                }>+ Add item</button>
+                }
+
+            </div>
+                                </div>
+        ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
