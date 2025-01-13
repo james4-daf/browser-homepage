@@ -2,8 +2,6 @@
 import {useEffect} from 'react';
 import {Input} from '@/components/ui/input'
 import {useState} from "react";
-import { Button } from "@/components/ui/button"
-import { Ellipsis } from 'lucide-react';
 import { X } from 'lucide-react';
 interface SectionItem {
     itemId: number;
@@ -178,10 +176,13 @@ export default function Home() {
                     placeholder={`Add content...`}
                     autoFocus
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && e.target.value) {
-                            addItemToSection(section.sectionId, e.target.value);
-                            e.target.value = '';
-                            setActiveSectionId(null)
+                        if (e.key === 'Enter') {
+                            const target = e.target as HTMLInputElement;
+                            if (target.value.trim() !== '') {
+                                addItemToSection(section.sectionId, target.value.trim());
+                                target.value = '';
+                                setActiveSectionId(null)
+                            }
                         }
                         else if (e.key === 'Escape') {
                             setActiveSectionId(null); // Close input on Escape
