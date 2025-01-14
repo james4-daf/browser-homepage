@@ -2,7 +2,7 @@
 import {useEffect} from 'react';
 import {Input} from '@/app/components/ui/input'
 import {useState} from "react";
-import {Plus, X} from 'lucide-react';
+import {X} from 'lucide-react';
 interface SectionItem {
     itemId: number;
     content: string;
