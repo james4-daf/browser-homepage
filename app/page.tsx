@@ -2,7 +2,7 @@
 import {useEffect} from 'react';
 import {Input} from '@/app/components/ui/input'
 import {useState} from "react";
-import { X } from 'lucide-react';
+import {Plus, X} from 'lucide-react';
 interface SectionItem {
     itemId: number;
     content: string;
@@ -98,14 +98,17 @@ export default function Home() {
 
   return (
     <div className="items-center justify-items-center min-h-screen p-8 pb-12  sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <Input placeholder="Add a section"
-             value={newSectionTitle}
-             onChange={(e) => setNewSectionTitle(e.target.value)}
-             onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                 handleAddNewSection();
-                }
-      }} />
+            <Input
+                placeholder="Add a section"
+                className=" shadow-lg max-w-2xl text-center" // Adjust padding for the icon
+                value={newSectionTitle}
+                onChange={(e) => setNewSectionTitle(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleAddNewSection();
+                    }
+                }}
+            />
         <div className={`grid gap-8 ${
             sectionData.length <= 2
                 ? 'grid-cols-1'
@@ -120,7 +123,7 @@ export default function Home() {
 
 
         {sectionData?.map((section) => (
-            <div key={section.sectionId} className="pt-8 min-w-48 group">
+            <div key={section.sectionId} className="pt-8 min-w-48">
                                 <div className="group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <h2 className='font-bold underline'>{section.sectionTitle} </h2>
 
@@ -143,12 +146,7 @@ export default function Home() {
                                                         }}
                                                         className="flex-1 border px-2 py-1"
                                                     />
-                                                    <button
-                                                        onClick={() => deleteItem(section.sectionId, item.itemId)}
-                                                        className="ml-2 text-gray-500 hover:text-red-500"
-                                                    >
-                                                        <X />
-                                                    </button>
+
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-between w-full">
