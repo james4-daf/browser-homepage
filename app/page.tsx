@@ -1,8 +1,20 @@
 'use client'
 import {useEffect} from 'react';
 import {Input} from '@/app/components/ui/input'
+import {Button} from '@/app/components/ui/button'
 import {useState} from "react";
-import {X} from 'lucide-react';
+import {X, Settings2} from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 interface SectionItem {
     itemId: number;
     content: string;
@@ -76,6 +88,62 @@ export default function Home() {
         );
     };
 
+    const deleteSection = (sectionId: number) => {
+        setSectionData((prev) => prev.filter((section) => section.sectionId !== sectionId));
+    };
+
+    const updateSectionTitle = (sectionId: number, newTitle: string) => {
+        setSectionData((prev) =>
+            prev.map((section) =>
+                section.sectionId === sectionId ? { ...section, sectionTitle: newTitle } : section
+            )
+        );
+    };
+
+
+    interface EditSectionProps {
+        sectionId: number;
+        sectionTitle: string;
+        onUpdateSectionTitle: (sectionId: number, newTitle: string) => void;
+        deleteSection: (sectionId: number) => void;
+    }
+    const EditSection = ({ sectionId, sectionTitle, onUpdateSectionTitle }: EditSectionProps)=> {
+
+        const [editedTitle, setEditedTitle] = useState(sectionTitle);
+
+        const handleSave = () => {
+            onUpdateSectionTitle(sectionId, editedTitle);
+        };
+
+        return (
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Settings2 />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <div className="flex w-full  items-center space-x-2">
+                        <Input value={editedTitle}
+                               onChange={(e) => setEditedTitle(e.target.value)}
+                               placeholder="Edit section title"/>
+
+                            <AlertDialogAction onClick={handleSave}>Save</AlertDialogAction>
+                        </div>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this section
+                             and remove the data from our servers.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <Button variant="destructive" onClick={() =>deleteSection(sectionId)}>Delete Section</Button>
+
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        )
+    }
+
 
     // Load from localStorage only once on mount
     useEffect(() => {
@@ -123,9 +191,24 @@ export default function Home() {
 
 
         {sectionData?.map((section) => (
-            <div key={section.sectionId} className="pt-8 min-w-48">
-                                <div className="group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <div key={section.sectionId} className="pt-8 min-w-48 ">
+
+
+
+                                        <div className=" flex justify-between group ">
                             <h2 className='font-bold underline'>{section.sectionTitle} </h2>
+
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+
+
+                                        <EditSection sectionId={section.sectionId}
+                                                     sectionTitle={section.sectionTitle}
+                                                     deleteSection={deleteSection}
+                                                     onUpdateSectionTitle={updateSectionTitle}/>
+                                            </div>
+
+                                    </div>
+
 
                 {/* Render items */}
                                     {section.items?.map((item) => (
@@ -198,7 +281,7 @@ export default function Home() {
                 }
 
             </div>
-                                </div>
+
         ))}
         </div>
     </div>
