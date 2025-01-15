@@ -14,7 +14,7 @@ import {
     AlertDialogHeader,
 
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/app/components/ui/alert-dialog"
 interface SectionItem {
     itemId: number;
     content: string;
